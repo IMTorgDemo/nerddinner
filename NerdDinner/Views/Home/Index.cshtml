@@ -1,0 +1,77 @@
+﻿@{
+    ViewBag.Title = "Where Geeks Eat";
+}
+
+<div class="jumbotron">
+    <h1>Nerd Dinner</h1>
+    <p class="lead">Organizing the world's nerds and helping them eat in packs.</p>
+    <p>@Html.ActionLink("Learn more", "About", "Home", null, new { @class = "btn btn-primary btn-large" })</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Popular Dinners</h2>
+        <ul class="entry-content" id="popularDinnerList" data-bind="foreach: popularDinners">
+            <li class="dinnerItem">
+                <a data-bind="attr: { href: Url }, text: Title"></a>
+                <br />
+                <strong data-bind="dateString: EventDate, datePattern: 'mmm d'"></strong><span data-bind="rsvpMessage: RSVPCount"></span>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <h2>Upcoming Dinners</h2>
+        <ul class="entry-content" id="upcomingDinnerList" data-bind="foreach: upcomingDinners">
+            <li class="dinnerItem">
+                <a data-bind="attr: { href: Url }, text: Title"></a>
+                <br />
+                <strong data-bind="dateString: EventDate, datePattern: 'mmm d'"></strong><span data-bind="rsvpMessage: RSVPCount"></span>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <h2>Closest Dinners</h2>
+        <ul class="entry-content" id="closeDinnerList" data-bind="foreach: closeDinners">
+            <li class="dinnerItem">
+                <a data-bind="attr: { href: Url }, text: Title"></a>
+                <br />
+                <strong data-bind="dateString: EventDate, datePattern: 'mmm d'"></strong><span data-bind="rsvpMessage: RSVPCount"></span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/knockout-3.0.0.js"></script>
+    <script type="text/javascript">
+        $.getJSON("/api/Search/PopularDinners?limit=5", function (dinners) {
+            var viewModel = {
+                popularDinners: ko.observableArray(dinners)
+            };
+            ko.applyBindings(viewModel, document.getElementById("popularDinnerList"));
+        })
+        $.getJSON("/api/Search/UpcomingDinners?limit=5", function (dinners) {
+            var viewModel = {
+                upcomingDinners: ko.observableArray(dinners)
+            };
+            ko.applyBindings(viewModel, document.getElementById("upcomingDinnerList"));
+        })
+
+        function showCurrentLocation(position) {
+            $.getJSON("/api/Search/ClosestDinners?latitude=" + position.coords.latitude + "&longitude=" + position.coords.longitude + "&limit=5", function (dinners) {
+                var viewModel = {
+                    closeDinners: ko.observableArray(dinners)
+                };
+                ko.applyBindings(viewModel, document.getElementById("closeDinnerList"));
+            })
+        }
+        
+        $().ready(function () {
+            try {
+                navigator.geolocation.getCurrentPosition(showCurrentLocation)
+            }
+            catch (e) {
+            }
+        });
+    </script>
+}
